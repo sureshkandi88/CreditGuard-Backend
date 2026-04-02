@@ -1,7 +1,9 @@
 using System.Text;
 using CreditGuard.API.Middleware;
 using CreditGuard.Infrastructure;
+using CreditGuard.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -90,6 +92,16 @@ app.UseSwaggerUI();
 
 // Global Exception Handler
 app.UseMiddleware<ExceptionMiddleware>();
+
+using (var scope = app.Services.CreateScope())
+{
+    var appDb = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    appDb.Database.Migrate();
+
+    var blobDb = scope.ServiceProvider.GetRequiredService<BlobDbContext>();
+    blobDb.Database.Migrate();
+}
+
 
 app.UseCors("AllowAngular");
 
